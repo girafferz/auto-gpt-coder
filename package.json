@@ -7,8 +7,15 @@
     "node": "18.x",
     "npm": ">=7.0.0"
   },
+  "pkg": {
+    "externals": [
+      "chalk",
+      "marked-terminal"
+    ]
+  },
   "scripts": {
     "test": "jest",
+    "auto-test": "jest specs/sample.spec.ts",
     "compile": "npx tsc && npx pkg .",
     "lint": "eslint .",
     "lint:fix": "eslint --fix --ext .ts ./src",
@@ -28,7 +35,6 @@
     "@types/yargs": "^17.0.24",
     "@typescript-eslint/eslint-plugin": "^5.37.0",
     "@typescript-eslint/parser": "^5.37.0",
-    "axios-mock-adapter": "^1.21.2",
     "dotenv": "^16.3.1",
     "eslint": "8.22",
     "eslint-config-prettier": "^8.5.0",
@@ -47,7 +53,10 @@
   },
   "type": "commonjs",
   "dependencies": {
+    "axios": "^0.27.2",
+    "marked": "^11.1.1",
     "moment-timezone": "^0.5.43",
+    "openai": "^4.24.1",
     "papaparse": "^5.4.1",
     "pkg": "^5.8.1",
     "winston": "^3.11.0"

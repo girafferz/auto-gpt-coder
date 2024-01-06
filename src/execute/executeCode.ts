@@ -1,5 +1,10 @@
-import { ValidatorCode } from "../types";
+import {ValidatorCode} from "../types";
+import * as dotenv from 'dotenv';
+import {runTestsAndProcessErrors} from "../module/mainProcess";
 
+dotenv.config();
+
+// @ts-ignore
 export const main = async (argv: ValidatorCode) => {
-  console.log("__executeCode.ts__13__", argv);
+  await runTestsAndProcessErrors();
 };

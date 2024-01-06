@@ -20,7 +20,7 @@ export const defineCommand = (yargs: Argv) => {
   });
 };
 
-export const processParseCommand = async (argv: Arguments<ParseArgs>) => {
+export const processMainCommand = async (argv: Arguments<ParseArgs>) => {
   try {
     await main(argv);
   } catch (error) {
