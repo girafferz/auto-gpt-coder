@@ -1,0 +1,2 @@
+
+expect(console.error).toHaveBeenCalledWith("sample error");
