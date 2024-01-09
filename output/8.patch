@@ -1,0 +1,7 @@
+The test failed because the `execute` method in the `Sample` class from `src/module/sample.ts` is not implemented.
+
+In the `execute` method, there is a line of code that throws an error - `throw new Error('Method not implemented.');`. 
+
+To fix the error, you would need to implement the `execute` method in the `Sample` class located at `src/module/sample.ts`.
+
+If you still need help, could you provide more context or detail about what the `execute` method in `Sample` class is supposed to do? This will help in giving a more accurate guidance on how to implement it.

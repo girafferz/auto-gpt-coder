@@ -16,24 +16,13 @@ async function fetchGPT3Response(messages: Message[]): Promise<any> {
     model: 'gpt-4',
     // このmessagesに追加していく？
     messages: messages,
-    // messages: [
-    //     {
-    //         role: 'system',
-    //         content: 'You are a code patch generator, I will send you a code diff and standard logs and error logs. please reply by patch file for fix the error.'
-    //     },
-    //     {
-    //         role: 'user',
-    //         content: prompt,
-    //     },
-    // ],
   };
   try {
-    console.log('__gpt3Service.ts__24__', data);
     const response = await axios.post(url, data, { headers: headers });
-    console.log('__gpt3Service.ts__17__', JSON.stringify(response.data));
     return response.data;
   } catch (error) {
-    console.log('__gpt3Service.ts__18__', error.message);
+    console.log('__gpt3Service.ts__18__', url, data, error.message);
+    throw error.message;
     return '';
   }
 }

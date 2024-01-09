@@ -62,7 +62,7 @@ async function saveMessageContent(responseData, i: number) {
 export const runTestsAndProcessErrors = async () => {
   const messages: Message[] = [];
   console.log('__mainProcess.ts__64__');
-  return;
+  // return;
 
   try {
     const testCommand = 'npm run auto-test'; // 例：Jestを使用する場合
