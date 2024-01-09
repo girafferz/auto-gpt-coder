@@ -1,0 +1,14 @@
+patch to apply：
+
+```
+--- a/src/module/sample.ts
++++ b/src/module/sample.ts
+@@ -2,7 +2,7 @@ export class Sample {
+   constructor() {}
+
+   execute() {
+-    throw new Error('Method not implemented.');
++    console.log('Sample Class execute method is now working...')
+   }
+ }
+```
