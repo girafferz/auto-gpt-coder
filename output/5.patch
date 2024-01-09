@@ -1,0 +1,9 @@
+I executed your command provided by your reply. result is stdout: stderr:Error: Command failed: sample › should run tests and process errors
+
+Method not implemented.
+
+5 |     throw new Error('Method not implemented.');
+sample[3369]: sample cannot find any existing process you have access to which has a name like '›'; try running with `sudo`.
+/bin/sh: line 2: Method: command not found
+/bin/sh: -c: line 4: syntax error near unexpected token `('
+/bin/sh: -c: line 4: `5 |     throw new Error('Method not implemented.');'

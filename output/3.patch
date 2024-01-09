@@ -1,0 +1,17 @@
+To provide context to the issue, it seems that the error is occurring because there's an unimplemented method in the sample.ts module. As a result, the automatic tests are failing.
+
+The error is depicted in this portion of the output:
+
+```bash
+sample › should run tests and process errors
+
+Method not implemented.
+
+5 |     throw new Error('Method not implemented.');
+```
+
+The "Method not implemented" error is being thrown inside the "execute" function of the Sample module.
+
+The error can be fixed by implementing the expected functionality inside the "execute" function or, if the function is a placeholder, comment out or remove the line that throws the error while the function is not completed.
+
+Let me know what the next steps should be.

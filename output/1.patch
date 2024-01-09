@@ -1,0 +1,7 @@
+The error is occurring because a method in your `Sample` class isn't implemented. The error thrown is "Method not implemented." from the `execute` method in `sample.ts`.
+
+If this error should not occur, you may need to implement the method `execute` in the `Sample` class. 
+
+If `execute` is a method that should be implemented by subclasses of `Sample`, then probably you are creating an instance of `Sample` and calling `execute` on it. Make sure to create an instance of the subclass that implements `execute` and then call `execute` on that. 
+
+Before these, ensure that your test script is correct and it's not falsely reporting a functionality issue. Always remember to debug and consult the Node.js documentation or Stack Overflow to help diagnose the error.
