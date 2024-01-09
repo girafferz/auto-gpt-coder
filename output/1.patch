@@ -1,1 +1,1 @@
-sed -i 's/throw new Error("Method not implemented.");/console.log("Sample Class execute method is now working...");/g' src/module/sample.ts
+git status

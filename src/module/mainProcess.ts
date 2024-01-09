@@ -96,5 +96,6 @@ export const runTestsAndProcessErrors = async () => {
       await sleep(3000);
       console.log('__mainProcess.ts__95__');
     }
+    console.log('__mainProcess.ts__99__', messages);
   }
 };
