@@ -10,5 +10,5 @@ describe('runTestsAndProcessErrors', () => {
         // mainを処理を起動
         await runTestsAndProcessErrors();
 
-    },1000000);
+    },100000000);
 });

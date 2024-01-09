@@ -1,0 +1,7 @@
+To fix the error 'The argument 'file' cannot be empty', you must pass a valid file path to the 'file' argument. For example:
+
+```
+sed -i 's/throw new Error("Method not implemented.");/console.log("Sample Class execute method is now working...");/g' ./path_to_your_file/sample.ts
+```
+
+Just replace './path_to_your_file/sample.ts' with the actual path to your 'samples.ts' file.

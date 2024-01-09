@@ -13,7 +13,8 @@ function addBasePrompt(messages: Message[]) {
     role: 'system',
     content:
       `You are a senior engineer and I am a junior engineer.` +
-      `I'll just run the command you provided by shell. Please reply just command only and info by commentouted . If there is anything you want to know, please tell me the command you want me to execute.`,
+      `I'll just run the command you provided by shell. Please reply just command with comment . If there is anything you want to know, please reply me the command you want me to execute.` +
+      `dont use \`\`\` enclose the command.  just reply executable string by shell`,
   });
 }
 
@@ -85,6 +86,7 @@ export const runTestsAndProcessErrors = async () => {
         role: 'user',
         content: `stdout:${stdoutStr} stderr:${stderrStr}`,
       });
+      console.log('__mainProcess.ts__88__', stdoutStr, stderrStr);
       addBasePrompt(messages);
       const responseData = await fetchGPT3Response(messages);
       const patchFilePath = await makePatchFile(responseData, i);
@@ -92,6 +94,7 @@ export const runTestsAndProcessErrors = async () => {
       stdoutStr = applyResult.stdout;
       stderrStr = applyResult.stderr;
       await sleep(3000);
+      console.log('__mainProcess.ts__95__');
     }
   }
 };
