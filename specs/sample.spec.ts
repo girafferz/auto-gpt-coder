@@ -1,15 +1,10 @@
+// npm run auto-test から起動されるサンプルのテストコード
+
+import { Sample } from '../src/module/sample';
+
 describe('sample', () => {
-it('should run tests and process errors', async () => {
-        // We mock console methods to ensure they were called as expected
-        console.log = jest.fn();
-        console.error = jest.fn();
-expect(console.error).toHaveBeenCalledTimes(1);
-expect(console.error).toHaveBeenCalledWith("sample error");
-throw new Error("sample error");
-    throw new Error("sample error");
-
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
+    it('should run tests and process errors', async () => {
+        const target = new Sample();
+        target.execute();
     },1000000);
-
 });

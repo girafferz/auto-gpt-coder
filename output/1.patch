@@ -1,2 +1,10 @@
 
-expect(console.error).toHaveBeenCalledWith("sample error");
+export class Sample {
+  constructor() {}
+
+  execute() {
+    // Implement your logic here
+    // For example, you can add some code to log a message or perform some calculations
+    console.log("Executing the execute method...");
+  }
+}
