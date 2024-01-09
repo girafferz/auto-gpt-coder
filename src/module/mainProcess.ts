@@ -3,6 +3,7 @@ import * as util from 'util';
 import * as fs from 'fs';
 import { promisify } from 'util';
 import { readFileSync } from 'fs';
+import { sleep } from '../utils';
 
 const exec = util.promisify(require('child_process').exec);
 const writeFile = promisify(fs.writeFile);
@@ -12,56 +13,32 @@ function addBasePrompt(messages: Message[]) {
     role: 'system',
     content:
       `You are a senior engineer and I am a junior engineer.` +
-      `I'll just run the command you upvoted. Please enclose commands in \`\`\`\` and \`\`\`\`. If there is anything you want to know, please tell me the command you want me to execute.`,
+      `I'll just run the command you provided by shell. Please reply just command only and info by commentouted . If there is anything you want to know, please tell me the command you want me to execute.`,
   });
 }
 
-const applyPatchFromFileContent = async (patchFilePath: string) => {
+const applyPatchFromFileContent = async (
+  patchFilePath: string,
+): Promise<{ stdout: string; stderr: string }> => {
   const patchContent = readFileSync(patchFilePath, 'utf8');
-  // １行目のコメントに書いてあるパスに対して、patchContentを書き込む
-  // Extract file path from the first uncommented line
-  const firstLine = patchContent.split('\n')[0];
-  const match = firstLine.match(/^\/\/\s?(.+)/);
-  if (match) {
-    const filePath = match[1];
-    // Make sure the file exists
-    if (fs.existsSync(filePath)) {
-      fs.writeFileSync(filePath, patchContent);
-    } else {
-      throw new Error(`File "${filePath}" does not exist.`);
-    }
-  } else {
-    throw new Error('No file path comment found in the patch content.');
+  try {
+    const { stdout, stderr } = await exec(`${patchContent}`);
+    // Return both the standard output and the error output
+    return { stdout, stderr };
+  } catch (error) {
+    return { stdout: '', stderr: error };
   }
 };
 
-async function makePatchFile(responseData) {
-  const messageContent = responseData.choices[0].message.content;
-  const patchRegex = /```typescript([\s\S]+?)```/;
-  const patchMatch = messageContent.match(patchRegex);
-  const patchFilePath = `./output/${1}.patch`;
-  // Write responseData to patch file
-  // Ensure the output directory exists
-  let patchContent = '';
-  if (patchMatch && patchMatch[1]) {
-    // ```typescript content``` の時
-    patchContent = patchMatch[1];
+async function makePatchFile(responseData, i: number) {
+  let messageContent = '';
+  if (!responseData.choices) {
+    messageContent = '';
   } else {
-    // ``` content``` の時
-    const patchRegex = /```([\s\S]+?)```/;
-    const patchMatch2 = messageContent.match(patchRegex);
-    if (patchMatch2 && patchMatch2[1]) {
-      // ```content``` の時
-      patchContent = patchMatch2[1];
-    } else {
-      // ```が何もない時
-      patchContent = messageContent;
-    }
+    messageContent = responseData.choices[0].message.content;
   }
-
-  // Now, you can write patchContent to a file
-  fs.mkdirSync('output', { recursive: true });
-  await writeFile(patchFilePath, patchContent, 'utf8');
+  const patchFilePath = `./output/${i}.patch`;
+  await writeFile(patchFilePath, messageContent, 'utf8');
   return patchFilePath;
 }
 
@@ -78,11 +55,11 @@ export const runTestsAndProcessErrors = async () => {
     console.error('標準エラー出力:', stderr);
   } catch (error) {
     // git diffをGPTに送る
-    // const { stdout: diff } = await exec('git diff');
-    // messages.push({
-    //   role: 'user',
-    //   content: 'This is the git diff of the project now editing:\n' + diff,
-    // });
+    const { stdout: diff } = await exec('git diff');
+    messages.push({
+      role: 'user',
+      content: 'This is the git diff of the project now editing:\n' + diff,
+    });
 
     // errorをGPTに送る
     messages.push({
@@ -90,14 +67,31 @@ export const runTestsAndProcessErrors = async () => {
       content: 'ERROR is :\n' + JSON.stringify(error),
     });
 
+    let stdoutStr = '';
+    let stderrStr = '';
+
     addBasePrompt(messages);
     const responseData = await fetchGPT3Response(messages);
     console.log('__executeCode.ts__12__', responseData);
-    const patchFilePath = await makePatchFile(responseData);
+    const patchFilePath = await makePatchFile(responseData, 0);
 
-    await applyPatchFromFileContent(patchFilePath);
+    const applyResult = await applyPatchFromFileContent(patchFilePath);
+    stdoutStr = applyResult.stdout;
+    stderrStr = applyResult.stderr;
 
     // 3回繰り返す
-    for (let i = 0; i < 3; i++) {}
+    for (let i = 1; i < 10; i++) {
+      messages.push({
+        role: 'user',
+        content: `stdout:${stdoutStr} stderr:${stderrStr}`,
+      });
+      addBasePrompt(messages);
+      const responseData = await fetchGPT3Response(messages);
+      const patchFilePath = await makePatchFile(responseData, i);
+      const applyResult = await applyPatchFromFileContent(patchFilePath);
+      stdoutStr = applyResult.stdout;
+      stderrStr = applyResult.stderr;
+      await sleep(3000);
+    }
   }
 };
