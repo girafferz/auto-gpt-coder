@@ -13,36 +13,43 @@ function addBasePrompt(messages: Message[]) {
     role: 'system',
     content:
       `You are a senior engineer and I am a junior engineer.` +
-      `I just run the bash script you gave me. Copy and paste.` +
-      `I'll just run the command you provided by shell. Please ` +
-      `reply just command with comment . If there is anything you want to know, ` +
-      `please send me the command you want me to execute.` +
-      ` use \`\`\`bash \`\`\`enclose the command.  reply executable string by shell`,
+      `I just  Copy and paste the code from you.` +
+      `Please do not omit the entire code and reply.` +
+      ` use \`\`\`typescript \`\`\`enclose the command.`,
   });
 }
 
 const applyPatchFromFileContent = async (
   patchFilePath: string,
-): Promise<{ stdout: string; stderr: string }> => {
+  targetFilePath: string,
+): Promise<void> => {
   const patchContent = readFileSync(patchFilePath, 'utf8');
   console.log('__mainProcess.ts__27__', patchContent);
-  const bashScriptRegex = /```bash([\s\S]*?)```/m;
-  const match = patchContent.match(bashScriptRegex);
+  const typescriptContent = /```typescript([\s\S]*?)```/m;
+  const match = patchContent.match(typescriptContent);
   if (!match || !match[1]) {
-    return {
-      stdout: '',
-      stderr:
-        'No bash script found in the patch content. please give me bash script enclosed by ```bash```',
-    };
+    return;
   }
-  const bashScript = match[1].trim();
+  const typescriptCode = match[1].trim();
+
+  // targetFilePathのcodeか判定する
+  const result = await fetchGPT3Response([
+    {
+      role: 'user',
+      content: `is this ${targetFilePath} code ?? >>>> ${typescriptCode} \n\n if so please reply "yes"`,
+    },
+  ]);
+  const checkFlagContent = result.choices[0].message.content;
+  if (!checkFlagContent.toLowerCase().includes('yes')) {
+    console.log('__mainProcess.ts__44__', checkFlagContent);
+    return;
+  }
 
   try {
-    const { stdout, stderr } = await exec(bashScript);
-    // Return both the standard output and the error output
-    return { stdout, stderr };
+    console.log('__mainProcess.ts__42__BASH typescriptCode', typescriptCode);
+    fs.writeFileSync(targetFilePath, typescriptCode);
   } catch (error) {
-    return { stdout: '', stderr: error };
+    console.log('__mainProcess.ts__39__', error.message);
   }
 };
 
@@ -73,12 +80,19 @@ export const runTestsAndProcessErrors = async () => {
     console.log('標準出力:', stdout);
     console.error('標準エラー出力:', stderr);
   } catch (error) {
+    const targetFilePath = 'src/module/sample.ts';
     // git diffをGPTに送る
-    // const { stdout: diff } = await exec('git diff');
-    // messages.push({
-    //   role: 'user',
-    //   content: 'This is the git diff of the project now editing:\n' + diff,
-    // });
+    const { stdout: diff } = await exec('git diff ' + targetFilePath);
+    const { stdout: fileContent } = await exec('cat ' + targetFilePath);
+    console.log('__mainProcess.ts__80__', fileContent);
+    messages.push({
+      role: 'user',
+      content: 'This is the git diff of the project now editing:\n' + diff,
+    });
+    messages.push({
+      role: 'user',
+      content: 'This is the file content now editing:\n' + fileContent,
+    });
 
     // errorをGPTに送る
     console.log('__mainProcess.ts__81__');
@@ -88,8 +102,8 @@ export const runTestsAndProcessErrors = async () => {
     });
     console.log('__mainProcess.ts__85__');
 
-    let stdoutStr = '';
-    let stderrStr = '';
+    const stdoutStr = '';
+    const stderrStr = '';
 
     addBasePrompt(messages);
     console.log('__mainProcess.ts__91__');
@@ -97,23 +111,33 @@ export const runTestsAndProcessErrors = async () => {
     console.log('__executeCode.ts__12__', responseData);
     const patchFilePath = await saveMessageContent(responseData, 0);
 
-    const applyResult = await applyPatchFromFileContent(patchFilePath);
-    stdoutStr = applyResult.stdout;
-    stderrStr = applyResult.stderr;
+    await applyPatchFromFileContent(patchFilePath, targetFilePath);
 
-    // 3回繰り返す
-    for (let i = 1; i < 10; i++) {
+    // 繰り返す
+    for (let i = 1; i < 5; i++) {
+      const testCommand = 'npm run auto-test'; // 例：Jestを使用する場合
+      // テストコマンドの実行
+      let stdoutStr = '';
+      let stderrStr = '';
+      let unitTesterror = '';
+      try {
+        const { stdout, stderr } = await exec(testCommand);
+        stdoutStr = stdout;
+        stderrStr = stderr;
+      } catch (e) {
+        unitTesterror = e.message;
+      }
+
       messages.push({
         role: 'user',
-        content: `I executed your command provided by your reply. result is stdout:${stdoutStr} stderr:${stderrStr}`,
+        content: `I executed your typescript code provided by your reply. result is stdout:${stdoutStr} stderr:${stderrStr}, unit-test error: ${unitTesterror}`,
       });
       console.log('__mainProcess.ts__88__', stdoutStr, stderrStr);
-      addBasePrompt(messages);
+
+      // addBasePrompt(messages);
       const responseData = await fetchGPT3Response(messages);
       const patchFilePath = await saveMessageContent(responseData, i);
-      const applyResult = await applyPatchFromFileContent(patchFilePath);
-      stdoutStr = applyResult.stdout;
-      stderrStr = applyResult.stderr;
+      await applyPatchFromFileContent(patchFilePath, targetFilePath);
       await sleep(3000);
       console.log('__mainProcess.ts__95__');
     }
