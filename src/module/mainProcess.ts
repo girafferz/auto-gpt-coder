@@ -13,9 +13,10 @@ function addBasePrompt(messages: Message[]) {
     role: 'system',
     content:
       `You are a senior engineer and I am a junior engineer.` +
+      `I just run the bash script you gave me. Copy and paste.` +
       `I'll just run the command you provided by shell. Please ` +
       `reply just command with comment . If there is anything you want to know, ` +
-      `please reply me the command you want me to execute.` +
+      `please send me the command you want me to execute.` +
       ` use \`\`\`bash \`\`\`enclose the command.  reply executable string by shell`,
   });
 }
